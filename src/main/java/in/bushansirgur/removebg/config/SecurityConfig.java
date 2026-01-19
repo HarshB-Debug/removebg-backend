@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final ClerkJwtAuthFilter jwtAuthFilter;
+    public ClerkJwtAuthFilter jwtAuthFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -47,24 +47,35 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
+        // Allow requests from your frontend
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
+                "http://localhost:3000",
                 "https://removebg-topaz.vercel.app"
         ));
 
+        // Allow all HTTP methods
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
         ));
 
-        config.setAllowedHeaders(List.of(
+        // Allow all headers (important for file uploads and various content types)
+        config.setAllowedHeaders(List.of("*"));
+
+        // Expose headers that frontend can read
+        config.setExposedHeaders(List.of(
                 "Authorization",
                 "Content-Type"
         ));
 
+        // Allow credentials (cookies, authorization headers)
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+        // Cache preflight requests for 1 hour (reduces OPTIONS requests)
+        config.setMaxAge(3600L);
+
+        // Apply CORS configuration to all endpoints
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
         return source;
